@@ -20,7 +20,7 @@ This Node.js tool is designed to automate the process of importing deposits (suc
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/your-repo/orvium-deposit-import.git
+git clone [https://github.com/your-repo/orvium-deposit-import.git](https://github.com/orvium/orvium-tools.git)
 cd orvium-tools
 ```
 
@@ -43,8 +43,8 @@ API_URL=https://api.orvium.io
 npx ts-node import.ts <directory-path> <community>
 ```
 where:
-- <directory-path>: The path to the directory containing the meta.json and manuscript file (e.g., Manuscript.docx).
-- <community>: The name or identifier of the community in which the deposit is categorized.
+- directory-path: The path to the directory containing the meta.json and manuscript file (e.g., Manuscript.docx).
+- community: The name or identifier of the community in which the deposit is categorized.
 
 ### Example
 ```bash
