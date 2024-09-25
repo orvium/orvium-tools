@@ -58,6 +58,8 @@ interface Deposit {
     community: string;
     abstract: string;
     authors: Author[];
+    disciplines: string[];
+    keywords: string[];
 }
 
 /**
@@ -352,7 +354,9 @@ async function importDeposit(directoryPath: string) {
             title: metaData.title,
             abstract: metaData.abstract,
             community: community, 
-            authors: metaData.authors.map(transformAuthor)
+            authors: metaData.authors.map(transformAuthor),
+            disciplines: metaData.disciplines,
+            keywords: metaData.keywords,
         }
         // Import the deposit and get the deposit ID
         const depositId = await importSingleDeposit(depositMetadata);
