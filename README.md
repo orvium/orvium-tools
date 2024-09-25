@@ -20,7 +20,7 @@ This Node.js tool is designed to automate the process of importing deposits (suc
 1. Clone the repository:
 
 ```bash
-git clone [https://github.com/your-repo/orvium-deposit-import.git](https://github.com/orvium/orvium-tools.git)
+git clone git clone [https://github.com/orvium/orvium-tools.git](https://github.com/orvium/orvium-tools.git)
 cd orvium-tools
 ```
 
