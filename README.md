@@ -28,14 +28,14 @@ You can run **Orvium Tools** directly without installing it globally using `npx`
 ```bash
 npx @orvium/orvium-tools <manuscriptPath> <community>
 ```
-- <directory>: The path to the folder that contains the deposit metadata and manuscript files (required).
-- <community>: The name of the Orvium community where the deposit should be uploaded (required).
+- **directory**: The path to the folder that contains the deposit metadata and manuscript files (required).
+- **community**: The name of the Orvium community where the deposit should be uploaded (required).
 
 #### Example
 
 ```bash
 orvium-tools ./manuscripts/manuscript_1 Orvium
-```bash
+```
 
 ### Option 2: Install Globally
 
