@@ -73,8 +73,8 @@ You can also use Orvium Tools within your own Node.js applications. The main fun
 ```typescript
 import { importDeposit } from '@orvium/orvium-tools';
 
-const directoryPath = './Downloads/54441';
-const community = 'Test Community';
+const directoryPath = '/manuscript/manuscript_1';
+const community = 'Orvium';
 
 importDeposit(directoryPath, community)
   .then(() => console.log('Deposit imported successfully'))
