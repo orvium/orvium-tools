@@ -1,3 +1,21 @@
+/**
+ * Importer module for managing deposits and manuscript uploads to the Orvium platform.
+ *
+ * This module handles the full process of importing deposit data (including author information, 
+ * metadata, keywords, community, and manuscript files) to the Orvium platform:
+ *
+ * - Load metadata from a local JSON file.
+ * - Transform author data into the appropriate format for the Orvium platform.
+ * - Create a deposit entry by sending the metadata and author information to the platform.
+ * - Generate a signed URL for securely uploading the manuscript to a cloud storage service (e.g., AWS S3).
+ * - Upload the manuscript file using the pre-signed URL.
+ * - Confirm the successful upload by sending metadata to the platform.
+ *
+ * The module uses `dotenv` for environment variables, `axios` for HTTP requests, and `fs` and `path` 
+ * for file operations. It is designed to be used in automation processes or integrated into other
+ * applications for deposit and manuscript management.
+ *
+ */ 
 import dotenv from 'dotenv';
 import axios, { AxiosResponse } from 'axios';
 import fs from 'fs';
@@ -140,22 +158,6 @@ if (!API_KEY || !API_KEY_USER || !API_URL) {
   process.exit(1);  // Exit the process with a status code of 1 for an error
 }
 
-// Obtain filepath to JSON metadata folder in the command line
-const directoryPath: string = process.argv[2];  
-
-// Check is provided, otherwise exit
-if (!directoryPath) {
-    console.error('Please use: npx ts-node import.ts <directory> <community>');
-    process.exit(1);
-}
-
-const community: string = process.argv[3];  
-
-// Check is provided, otherwise exit
-if (!community) {
-    console.error('Please use: npx ts-node import.ts <directory> <community>');
-    process.exit(1);
-}
 
 /**
  * Loads a JSON file from the specified file path and returns its content as an object.
@@ -185,22 +187,20 @@ function loadJsonFile(directoryPath: string) {
  * Prepares the file payload including metadata such as name, type, size, and last modification time.
  * This function is specifically structured to fetch file metadata synchronously.
  *
- * @param {string} filePath - The full path to the file.
+ * @param {string} manuscriptPath - The full path to the file.
  * @returns {object} The file payload object necessary for uploads.
  */
-function createManuscritpMetadata(directoryPath: string): ManuscriptMetadata {
-     // Append manuscript to the provided directory path
-    const manuscriptPath: string = path.join(directoryPath, 'Manuscript.docx'); 
-    
+function createManuscriptMetadata(manuscriptPath: string): ManuscriptMetadata {
+  
     const fileStats = fs.statSync(manuscriptPath);  // Get file statistics synchronously
 
     return {
-        file: {
-            name: 'Manuscript.docx',  // Extract the filename from the path
-            type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',  // MIME type (adjust as necessary)
-            size: fileStats.size,  // File size in bytes
-            lastModified: fileStats.mtimeMs  // Last modified time in milliseconds
-        }
+            file: {
+                name: path.basename(manuscriptPath),  // Extract the filename from the path
+                type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',  // MIME type (adjust as necessary)
+                size: fileStats.size,  // File size in bytes
+                lastModified: fileStats.mtimeMs  // Last modified time in milliseconds
+            }
     };
 }
 
@@ -282,15 +282,14 @@ async function generateManuscriptUploadUrl(depositId: string, manuscriptMetadata
  * to an Amazon S3 bucket using an HTTP PUT request. The necessary headers for the request, such as
  * Content-Type and Content-Length, are set based on the provided manuscript metadata.
  *
- * @param {string} directoryPath - The directory path where the manuscript is stored locally.
+ * @param {string} manuscriptPath - The manuscript path where the manuscript is stored locally.
  * @param {UploadSignedUrlResponse} uploadSignedUrlResponse - The response object containing the signed URL and other upload parameters.
  * @param {ManuscriptMetadata} manuscriptMetadata - Metadata about the manuscript, including the file size and other attributes.
  * @returns {Promise<AxiosResponse>} A promise that resolves with the response from the S3 service upon successful upload.
  * @throws {Error} An error is thrown if the upload fails, with a message detailing the cause of the failure.
  */
-async function uploadManuscriptToSignedUrl(directoryPath: string, uploadSignedUrlResponse: UploadSignedUrlResponse, manuscriptMetadata: ManuscriptMetadata) {
-    // Append manuscript to the provided directory path
-    const manuscriptPath: string = path.join(directoryPath, 'Manuscript.docx'); 
+async function uploadManuscriptToSignedUrl(manuscriptPath: string, uploadSignedUrlResponse: UploadSignedUrlResponse, manuscriptMetadata: ManuscriptMetadata) {
+    
     const manuscritpStream = fs.createReadStream(manuscriptPath);
     
     try {
@@ -342,11 +341,12 @@ async function confirmManuscriptImported(depositId: string, uploadSignedUrlRespo
  * This function orchestrates several steps to fully integrate a manuscript into the system: it loads metadata,
  * creates a deposit, uploads the manuscript to a pre-signed URL, and finally confirms the manuscript upload.
  *
- * @param {string} directoryPath - The path to the directory containing the metadata JSON file.
+ * @param directoryPath - Directory with the deposit manuscript and metadata
+ * @param community - Orvium community where the deposit will be uploaded
  * @returns {Promise<void>} - A promise that resolves if the entire deposit process completes successfully.
  * @throws {Error} - Throws an error if any step in the deposit, upload, or confirmation process fails.
- */
-async function importDeposit(directoryPath: string) {
+ */  
+export async function importDeposit(directoryPath: string, community: string): Promise<void> {
     try {
         const metaData = loadJsonFile(directoryPath);
         
@@ -356,29 +356,30 @@ async function importDeposit(directoryPath: string) {
             community: community, 
             authors: metaData.authors.map(transformAuthor),
             disciplines: metaData.disciplines,
-            keywords: metaData.keywords,
+            keywords: metaData.keywords, 
         }
+
+        //Extract the manuscript name and type from metadata.json
+        const manuscriptName = metaData.manuscript.filename;
+
         // Import the deposit and get the deposit ID
         const depositId = await importSingleDeposit(depositMetadata);
  
         // Getting SignedUrl
-        const manuscriptMetadata = await createManuscritpMetadata(directoryPath);
+        const manuscriptPath: string = path.join(directoryPath, manuscriptName); 
+        const manuscriptMetadata = await createManuscriptMetadata(manuscriptPath);
         const uploadSignedUrlResponse = await generateManuscriptUploadUrl(depositId, manuscriptMetadata);
 
         // Upload to signedUrl
-        const uploadStatus = await uploadManuscriptToSignedUrl(directoryPath, uploadSignedUrlResponse, manuscriptMetadata);
+        const uploadStatus = await uploadManuscriptToSignedUrl(manuscriptPath, uploadSignedUrlResponse, manuscriptMetadata);
         
         // Confirm and change metadata
         await confirmManuscriptImported(depositId, uploadSignedUrlResponse); 
         console.log('Deposit imported Successfully: ', depositMetadata.title);
 
 
+
     } catch (error) {
         console.error('An error occurred during import or upload:', error);
     }
-}
-  
-/**
- * Run the import and upload process
- */
-importDeposit(directoryPath);
+  }

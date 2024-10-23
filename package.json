@@ -1,20 +1,28 @@
 {
-  "name": "discipline-listener",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "name": "@orvium/orvium-tools",
+  "version": "1.0.5",
+  "description": "Set of tools to interact with Orvium API",
+  "main": "dist/import.js", 
+  "bin": {
+    "orvium-tools": "dist/import_cli.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "scripts": {
+    "build": "tsc",
+    "import-deposit": "ts-node src/import_cli.ts"
+  },
+  "keywords": [
+    "orvium", "manuscript", "deposit", "importer"
+  ],
+  "author": "Orvium OU",
+  "license": "MIT",
   "dependencies": {
-    "@types/axios": "^0.14.0",
-    "@types/node": "^22.5.2",
     "axios": "^1.7.7",
     "dotenv": "^16.4.5",
-    "ts-node": "^10.9.2",
+    "ts-node": "^10.9.2" 
+  },
+  "devDependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/node": "^22.5.2",
     "typescript": "^5.5.4"
   }
 }
