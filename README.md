@@ -1,10 +1,11 @@
 # Orvium Tools
 
-**Orvium Tools** is a command-line and programmatic tool for managing deposits and manuscripts on the Orvium platform. This tool simplifies the process of importing deposits and manuscripts into Orvium communities, and it can be used both via CLI and within other Node.js applications.
+**Orvium Tools** is a command-line and programmatic tool for managing deposits and manuscripts on the Orvium platform. This tool simplifies the process of importing deposits and manuscripts into Orvium communities or exporting them from Orvium as a zip file, and it can be used both via CLI and within other Node.js applications.
 
 ## Features
 
 - **Import Deposits**: Automatically import a deposit with associated metadata and manuscript files into an Orvium community.
+- **Export Deposits**: Automatically export a deposit from Orvium by creating a zip file containing meta.json (deposit metadata) and manuscript files.
 - **Programmatic Usage**: Use the tool within your Node.js project to integrate the import functionality into your own workflows.
 
 ## Table of Contents
@@ -25,8 +26,9 @@ You can install the **Orvium Tools** package globally or use it directly via `np
 
 You can run **Orvium Tools** directly without installing it globally using `npx`:
 
+#### Importing
 ```bash
-npx @orvium/orvium-tools <manuscriptPath> <community>
+npx @orvium/orvium-tools-import <manuscriptPath> <community>
 ```
 - **directory**: The path to the folder that contains the deposit metadata and manuscript files (required).
 - **community**: The name of the Orvium community where the deposit should be uploaded (required).
@@ -34,8 +36,21 @@ npx @orvium/orvium-tools <manuscriptPath> <community>
 #### Example
 
 ```bash
-orvium-tools ./manuscripts/manuscript_1 Orvium
+npx orvium-tools-import ./manuscripts/manuscript_1 Orvium
 ```
+
+#### Exporting 
+```bash
+npx @orvium/orvium-tools-export <depositId> <directory>
+```
+- **depositId**: Orvium deposit unique identifier (required).
+- **directory**: The path to the folder to download the zip file (required).
+
+#### Example
+```bash
+npx orvium-tools-export 34274234697423cdsf /tmp
+```
+
 
 ### Option 2: Install Globally
 
@@ -59,7 +74,13 @@ npm install @orvium/orvium-tools --save
 Orvium Tools provides a simple CLI for managing deposits in Orvium. Currently, the main feature is importing deposits.
 
 ```bash
-orvium-tools <manuscriptPath> <community>
+orvium-tools-import <manuscriptPath> <community>
+```
+
+or 
+
+```bash
+orvium-tools-import <depositId> <directory>
 ```
 
 Please make sure your PATH include the global NPM bin directory.
@@ -68,7 +89,7 @@ Please make sure your PATH include the global NPM bin directory.
 ### Programmatic Usage
 You can also use Orvium Tools within your own Node.js applications. The main function available for programmatic use is importDeposit, which imports a deposit into an Orvium community.
 
-#### Example:
+#### Example for Importing:
 
 ```typescript
 import { importDeposit } from '@orvium/orvium-tools';
@@ -82,6 +103,21 @@ importDeposit(directoryPath, community)
 ```
 
 This will allow you to integrate the deposit import process into your existing application or workflow.
+
+#### Example for Importing:
+
+```typescript
+import { exportDeposit } from '@orvium/orvium-tools';
+
+const depositId = '63214723845236xc631q3';
+const directoryPath = '/tmp';
+
+exportDeposit(depositId, directoryPath)
+  .then(() => console.log('Deposit exported successfully'))
+  .catch(err => console.error('Error during deposit export:', err));
+```
+
+This will allow you to integrate the deposit export process into your existing application or workflow.
 
 ## Environment Variables
 To connect to the Orvium platform, Orvium Tools requires some environment variables to be set. These variables are typically loaded from a .env file located in your project root.
@@ -122,14 +158,14 @@ You can test the tool locally using npm link to create a symlink to your local p
 
 ```bash
 npm link
-orvium-tools ./manuscripts/manuscript_1 Orvium
+orvium-tools-import ./manuscripts/manuscript_1 Orvium
 ```
 
 ### 5. Run in development mode:
 To run the TypeScript files directly (without building):
 
 ```bash
-npx ts-node src/import_cli.ts ./manuscripts/manuscript_1 Orvium
+npx ts-node src/import-deposit-cli.ts ./manuscripts/manuscript_1 Orvium
 ```
 
 ## License

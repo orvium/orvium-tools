@@ -25,7 +25,7 @@
  * on the Orvium platform.
  */
 
-import { importDeposit } from './import';  // Import the core function from the programmatic entry point
+import { importDeposit } from './import-deposit';  // Import the core function from the programmatic entry point
 import dotenv from 'dotenv';
 dotenv.config();
 
