@@ -1,16 +1,19 @@
 {
   "name": "@orvium/orvium-tools",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Set of tools to interact with Orvium API",
-  "main": "dist/import.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
     "orvium-tools-import": "dist/import-deposit-cli.js",
-    "orvium-tools-export": "dist/export-deposit-cli.js"
+    "orvium-tools-export": "dist/export-deposit-cli.js",
+    "orvium-tools-user-summary": "dist/user-summary-cli.js"
   },
   "scripts": {
     "build": "tsc",
     "import-deposit": "ts-node src/import-deposit-cli.ts",
-    "export-deposit": "ts-node src/export-deposit-cli.ts"
+    "export-deposit": "ts-node src/export-deposit-cli.ts",
+    "user-summary": "ts-node src/user-summary-cli.ts"
   },
   "keywords": [
     "orvium",

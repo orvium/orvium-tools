@@ -1,31 +1,46 @@
 #!/usr/bin/env node
 
-import { exportDeposit } from './export-deposit';  // Import the core function from the programmatic entry point
+/**
+ * CLI for exporting a deposit (metadata + files) from Orvium.
+ *
+ * Usage:
+ *   $ orvium-tools-export <depositId> <downloadDirectory>
+ *   # via npx:
+ *   $ npx orvium-tools-export <depositId> <downloadDirectory>
+ *
+ * Arguments:
+ *   <depositId>          The Orvium deposit ID to export
+ *   <downloadDirectory>  Local directory where files will be written
+ *
+ * Behavior:
+ *   - Validates required CLI arguments.
+ *   - Calls `exportDeposit(depositId, downloadDirectory)`.
+ *   - Prints the result or any errors.
+ *
+ * Notes:
+ *   - If your core function relies on environment variables (e.g. ORVIUM_TOKEN),
+ *     you can enable `.env` support by uncommenting the dotenv block below.
+ */
 
-const depositId: string = process.argv[2];  
+import { exportDeposit } from "./export-deposit";
 
-// Check is provided, otherwise exit
-if (!depositId) {
-    console.error('Please use: npx ts-node import.ts  <depositId> <donwloadDirectory>');
-    process.exit(1);
+// Optional: load .env (uncomment if needed)
+// import 'dotenv/config';
+
+// --- Parse & validate args ---------------------------------------------------
+
+const [depositId, downloadDirectory] = process.argv.slice(2);
+
+const USAGE = "Usage: orvium-tools-export <depositId> <downloadDirectory>";
+
+if (!depositId || !downloadDirectory) {
+  console.error(USAGE);
+  process.exit(2); // 2 = incorrect usage
 }
 
-// Obtain filepath to JSON metadata folder in the command line
-const downloadPath: string = process.argv[3];  
+// --- Execute -----------------------------------------------------------------
 
-// Check is provided, otherwise exit
-if (!downloadPath) {
-    console.error('Please use: npx ts-node import.ts <depositId> <donwloadDirectory>');
-    process.exit(1);
-}
-
-
-// Validate arguments
-if (!depositId || !downloadPath) {
-  console.error('Usage: deposit-importer <directory> <community>');
-  process.exit(1);
-}
-
-// Execute the export process using the provided arguments
-exportDeposit(depositId,downloadPath)
-  .catch(err => console.error('Error during deposit export:', err));
+exportDeposit(depositId, downloadDirectory).catch((err) => {
+  console.error("Error during deposit export:", err?.message ?? err);
+  process.exit(1); // 1 = runtime error
+});

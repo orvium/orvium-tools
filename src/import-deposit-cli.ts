@@ -1,57 +1,43 @@
 #!/usr/bin/env node
 
 /**
- * CLI tool for importing deposits and uploading manuscripts to the Orvium platform.
+ * CLI for importing deposits (metadata + manuscripts) into the Orvium platform.
  *
- * This script provides a command-line interface (CLI) for automating the import of deposit data 
- * and manuscript files to the Orvium platform. It expects two command-line arguments:
+ * Usage:
+ *   $ import-deposit <directory> <community>
+ *   # or, if published:
+ *   $ npx import-deposit <directory> <community>
  *
- * - `<directory>`: The directory path where the JSON metadata and manuscript files are located.
- * - `<community>`: The community identifier to which the deposit will be associated.
+ * Arguments:
+ *   <directory>  Path to the folder containing JSON metadata and manuscript files
+ *   <community>  Community identifier to associate the deposit with
  *
- * The script performs the following tasks:
- * 
- * - Loads environment variables using `dotenv` for API authentication and configuration.
- * - Validates the provided command-line arguments (directory path and community).
- * - Executes the `importDeposit` function from the core module, which handles the full import and upload process.
- * - Outputs the result or any errors encountered during the process.
+ * Behavior:
+ *   - Loads environment variables via `dotenv` for API auth/config.
+ *   - Validates required CLI arguments.
+ *   - Calls `importDeposit(directory, community)` to perform the import/upload.
+ *   - Prints the result or any errors.
  *
- * Example usage:
- * ```
- * npx importDeposit <directory> <community>
- * ```
- *
- * This script is designed for use in automation pipelines or as a standalone tool for uploading deposits 
- * on the Orvium platform.
+ * Notes:
+ *   - Set ORVIUM_TOKEN / ORVIUM_API in your environment or .env if your core function uses them.
  */
 
-import { importDeposit } from './import-deposit';  // Import the core function from the programmatic entry point
-import dotenv from 'dotenv';
-dotenv.config();
+import { importDeposit } from "./import-deposit";
 
-// Obtain filepath to JSON metadata folder in the command line
-const directoryPath: string = process.argv[2];  
+// --- Parse & validate args ---------------------------------------------------
 
-// Check is provided, otherwise exit
-if (!directoryPath) {
-    console.error('Please use: npx ts-node import.ts <directory> <community>');
-    process.exit(1);
-}
+const [directoryPath, community] = process.argv.slice(2);
 
-const community: string = process.argv[3];  
+const USAGE = "Usage: orvium-tools-import <directory> <community>";
 
-// Check is provided, otherwise exit
-if (!community) {
-    console.error('Please use: npx ts-node import.ts <directory> <community>');
-    process.exit(1);
-}
-
-// Validate arguments
 if (!directoryPath || !community) {
-  console.error('Usage: deposit-importer <directory> <community>');
-  process.exit(1);
+  console.error(USAGE);
+  process.exit(2); // 2 = incorrect usage
 }
 
-// Execute the import process using the provided arguments
-importDeposit(directoryPath, community)
-  .catch(err => console.error('Error during deposit import:', err));
+// --- Execute -----------------------------------------------------------------
+
+importDeposit(directoryPath, community).catch((err) => {
+  console.error("Error during deposit import:", err?.message ?? err);
+  process.exit(1); // 1 = runtime error
+});
